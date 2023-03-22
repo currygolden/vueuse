@@ -12,6 +12,7 @@ export function useArrayDifference<T>(list: MaybeComputedRef<T[]>, values: Maybe
 
 /**
  * Reactive get array difference of two array
+ * @description 数组元素排除，支持自定义filter,支持key比较
  * @see https://vueuse.org/useArrayDifference
  * @returns {Array} - the difference of two array
  * @param args

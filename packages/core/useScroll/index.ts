@@ -32,13 +32,13 @@ export interface UseScrollOptions {
 
   /**
    * Trigger it when scrolling.
-   *
+   * 暴露给用户的滚动回调
    */
   onScroll?: (e: Event) => void
 
   /**
    * Trigger it when scrolling ends.
-   *
+   * 滚动停止的回调
    */
   onStop?: (e: Event) => void
 
@@ -78,6 +78,7 @@ export function useScroll(
   element: MaybeComputedRef<HTMLElement | SVGElement | Window | Document | null | undefined>,
   options: UseScrollOptions = {},
 ) {
+  // 解构设置初始默认值
   const {
     throttle = 0,
     idle = 200,
@@ -101,12 +102,13 @@ export function useScroll(
 
   // Use a computed for x and y because we want to write the value to the refs
   // during a `scrollTo()` without firing additional `scrollTo()`s in the process.
+  // 类似在set时候定义回调逻辑
   const x = computed({
     get() {
       return internalX.value
     },
-    set(x) {
-      scrollTo(x, undefined)
+    set(val: number) {
+      scrollTo(val, undefined)
     },
   })
 
@@ -114,24 +116,25 @@ export function useScroll(
     get() {
       return internalY.value
     },
-    set(y) {
-      scrollTo(undefined, y)
+    set(val: number) {
+      scrollTo(undefined, val)
     },
   })
 
   function scrollTo(_x: number | undefined, _y: number | undefined) {
+    // 在使用可能存在嵌套引用对象时用 resolveUnref 解包
     const _element = resolveUnref(element)
 
     if (!_element)
       return
-
+    // 调用scrollTo的目标
     (_element instanceof Document ? document.body : _element)?.scrollTo({
       top: resolveUnref(_y) ?? y.value,
       left: resolveUnref(_x) ?? x.value,
       behavior: resolveUnref(behavior),
     })
   }
-
+  // 定义滚动的状态
   const isScrolling = ref(false)
   const arrivedState = reactive({
     left: true,
@@ -145,7 +148,7 @@ export function useScroll(
     top: false,
     bottom: false,
   })
-
+  // 滚动停止，清空状态
   const onScrollEnd = (e: Event) => {
     // dedupe if support native scrollend event
     if (!isScrolling.value)
@@ -161,6 +164,7 @@ export function useScroll(
   const onScrollEndDebounced = useDebounceFn(onScrollEnd, throttle + idle)
 
   const onScrollHandler = (e: Event) => {
+    // 确定滚动触发事件源头，在冒泡，捕获有差别
     const eventTarget = (
       e.target === document ? (e.target as Document).documentElement : e.target
     ) as HTMLElement
@@ -191,6 +195,7 @@ export function useScroll(
     onScroll(e)
   }
 
+  // 目标元素监听scroll
   useEventListener(
     element,
     'scroll',
@@ -198,6 +203,7 @@ export function useScroll(
     eventListenerOptions,
   )
 
+  // 目标元素监听scrollend
   useEventListener(
     element,
     'scrollend',
@@ -213,5 +219,5 @@ export function useScroll(
     directions,
   }
 }
-
+// 定义函数返回值为可复用的类型
 export type UseScrollReturn = ReturnType<typeof useScroll>

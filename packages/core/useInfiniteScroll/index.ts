@@ -30,7 +30,9 @@ export interface UseInfiniteScrollOptions extends UseScrollOptions {
 
 /**
  * Reactive infinite scroll.
- *
+ * @description
+ *  1. 缺点在于dom数据太多，大数据渲染的时候容易触发非对比更新
+ *  2. 定义onLoadMore的函数类型
  * @see https://vueuse.org/useInfiniteScroll
  */
 export function useInfiniteScroll(
